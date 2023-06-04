@@ -1,4 +1,4 @@
-# collegeConnect
+# unisocial
 
 This is a MERN (MongoDB, Express Js, React Js, Node Js) based full stack Social Media Website.
 
