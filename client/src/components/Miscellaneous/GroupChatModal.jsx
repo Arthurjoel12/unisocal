@@ -1,34 +1,30 @@
+import React, { useState } from "react";
 import {
   Modal,
-  Button,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
   ModalOverlay,
-  useDisclosure,
-  useToast,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Button,
   FormControl,
+  FormLabel,
   Input,
   Box,
+  useToast,
 } from "@chakra-ui/react";
 import axios from "axios";
-import React from "react";
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setChats } from "../../State/ChatSlice";
 import UserBadgeItem from "../UserAvatar/UserBadgeItem";
-// import UserBadgeItem from '../UserAvatar/UserBadgeItem'
 import UserListItem from "../UserAvatar/UserListItem";
 
 const GroupChatModal = ({ children }) => {
-  const { isOpen, onOpen, onClose } = useDisclosure();
-
-  const [groupChatName, setGroupChatName] = useState();
+  const [isOpen, setIsOpen] = useState(false);
+  const [groupChatName, setGroupChatName] = useState("");
   const [selectedUsers, setSelectedUsers] = useState([]);
   const [searchResults, setSearchResults] = useState([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
   const token = useSelector((state) => state.user.token);
@@ -37,8 +33,8 @@ const GroupChatModal = ({ children }) => {
   const dispatch = useDispatch();
 
   const handleSearch = async (query) => {
-    setSearch(query);
     if (!query) {
+      setSearchResults([]);
       return;
     }
 
@@ -51,7 +47,7 @@ const GroupChatModal = ({ children }) => {
       };
 
       const { data } = await axios.get(
-        `http://localhost:5000/api/user?search=${search}`,
+        `http://localhost:5000/api/user?search=${query}`,
         config
       );
 
@@ -59,7 +55,7 @@ const GroupChatModal = ({ children }) => {
       setSearchResults(data);
     } catch (error) {
       toast({
-        title: "Error Occured!",
+        title: "Error Occurred!",
         description: "Failed to Load the Search Results",
         status: "error",
         duration: 5000,
@@ -67,12 +63,16 @@ const GroupChatModal = ({ children }) => {
         position: "bottom-left",
       });
     }
+
+    setSelectedUsers([]);
   };
 
   const handleSubmit = async () => {
-    if (!groupChatName || !selectedUsers) {
+    console.log("Group Chat Name:", groupChatName);
+    console.log("Selected Users:", selectedUsers);
+    if (!groupChatName.trim() || selectedUsers.length === 0) {
       toast({
-        title: "Please fill all the feilds",
+        title: "Please fill all the fields",
         status: "warning",
         duration: 5000,
         isClosable: true,
@@ -87,16 +87,20 @@ const GroupChatModal = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
       };
+      const userIds = selectedUsers.map((user) => user._id);
+      const requestBody = {
+        name: groupChatName,
+        users: userIds,
+      };
+
       const { data } = await axios.post(
-        `http://localhost:5000/api/chat/group`,
-        {
-          name: groupChatName,
-          users: JSON.stringify(selectedUsers.map((u) => u._id)),
-        },
+        "http://localhost:5000/api/chat/group",
+        requestBody,
         config
       );
+
       dispatch(setChats([data, ...chats]));
-      onClose();
+      setIsOpen(false);
       toast({
         title: "New Group Chat Created!",
         status: "success",
@@ -116,12 +120,15 @@ const GroupChatModal = ({ children }) => {
     }
   };
 
-  const handleDelete = (deluser) => {
-    setSelectedUsers(selectedUsers.filter((sel) => sel._id !== deluser._id));
+  const handleDelete = (delUser) => {
+    setSelectedUsers((prevSelectedUsers) =>
+      prevSelectedUsers.filter((user) => user._id !== delUser._id)
+    );
   };
 
   const handleGroup = (userToAdd) => {
-    if (selectedUsers.includes(userToAdd)) {
+    console.log("User Object:", userToAdd);
+    if (selectedUsers.some((user) => user._id === userToAdd._id)) {
       toast({
         title: "User already added",
         status: "warning",
@@ -132,14 +139,14 @@ const GroupChatModal = ({ children }) => {
       return;
     }
 
-    setSelectedUsers([...selectedUsers, userToAdd]);
+    setSelectedUsers((prevSelectedUsers) => [...prevSelectedUsers, userToAdd]);
   };
 
   return (
     <>
-      <span onClick={onOpen}>{children}</span>
+      <span onClick={() => setIsOpen(true)}>{children}</span>
 
-      <Modal isOpen={isOpen} onClose={onClose}>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
         <ModalOverlay />
         <ModalContent>
           <ModalHeader
@@ -153,21 +160,22 @@ const GroupChatModal = ({ children }) => {
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
             <FormControl>
+              <FormLabel>Chat Name</FormLabel>
               <Input
-                placeholder="Chat Name"
-                mb={3}
+                placeholder="Enter chat name"
+                value={groupChatName}
                 onChange={(e) => setGroupChatName(e.target.value)}
               />
             </FormControl>
-            <FormControl>
+            <FormControl mt={4}>
+              <FormLabel>Add Users (e.g., Deno, Betty, Kamau)</FormLabel>
               <Input
-                placeholder="Add Users eg: Dhoni, Nicholas, Brock"
-                mb={1}
+                placeholder="Search for users"
                 onChange={(e) => handleSearch(e.target.value)}
               />
             </FormControl>
 
-            <Box w="100%" display="flex" flexWrap="wrap">
+            <Box w="100%" display="flex" flexWrap="wrap" mt={4}>
               {selectedUsers.map((user) => (
                 <UserBadgeItem
                   key={user._id}
@@ -180,24 +188,19 @@ const GroupChatModal = ({ children }) => {
             {loading ? (
               <div>Loading...</div>
             ) : (
-              searchResults
-                ?.slice(0, 4)
-                .map((user) => (
-                  <>
-                    {user.isTrue ? (
-                      <UserListItem
-                        key={user.user._id}
-                        isTrue={false}
-                        user={user.user}
-                        chatAvail={true}
-                        handleChatFunction={() => handleGroup(user.user)}
-                        handleConnectFunction={() => {}}
-                      />
-                    ) : (
-                      ""
-                    )}
-                  </>
-                ))
+              searchResults?.slice(0, 4).map((user) => (
+                <React.Fragment key={user.user._id}>
+                  {user.isTrue ? (
+                    <UserListItem
+                      isTrue={false}
+                      user={user} // Update this line
+                      chatAvail={true}
+                      handleChatFunction={() => handleGroup(user)}
+                      handleConnectFunction={() => {}}
+                    />
+                  ) : null}
+                </React.Fragment>
+              ))
             )}
           </ModalBody>
 

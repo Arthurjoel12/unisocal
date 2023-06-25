@@ -73,7 +73,7 @@ export const addRemoveFriend = async (req, res) => {
             await friend.save();
         } else {
             friend.friendRequestList.unshift(userId);
-            msg = "Friend Request Sent"
+            msg = "Friend Request Sen"
             await friend.save();
         }
 

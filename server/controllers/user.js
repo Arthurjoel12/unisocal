@@ -20,13 +20,13 @@ export const registerUser = async (req, res) => {
     }
 
     // Regular expression to enforce college complexity
-    const collegeRegex = /^[a-zA-Z]{3,}$/;
+    const collegeRegex = /^[a-zA-Z]{25,}|.{1,24}$/;
 
     // Check if college meets complexity requirements
     if (!collegeRegex.test(college)) {
       res.status(400);
       throw new Error(
-        "College should be only alphabetic characters and minimum length 3 characters"
+        "College should be only alphabetic characters and have a minimum length of 25 characters."
       );
     }
 
@@ -49,7 +49,7 @@ export const registerUser = async (req, res) => {
     if (!passwordRegex.test(password)) {
       res.status(400);
       throw new Error(
-        "Password must contain at least 8 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number and atleast 1 special character."
+        "Password must contain at least 8 characters, including at least 1 uppercase letter, 1 lowercase letter, 1 number and at least 1 special character."
       );
     }
 
@@ -68,7 +68,7 @@ export const registerUser = async (req, res) => {
       const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET);
       user.password = undefined;
 
-      res.status(200).json({ token, user, msg: "Registration Successfull!" });
+      res.status(200).json({ token, user, msg: "Registration Successful!" });
     }
   } catch (error) {
     res.status(500).json(error.message);
@@ -97,7 +97,7 @@ export const authUser = async (req, res) => {
 
     res
       .status(200)
-      .json({ token: token, user: user, msg: "Login Successfull!" });
+      .json({ token: token, user: user, msg: "Login Successful!" });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -109,7 +109,7 @@ export const allUsers = async (req, res) => {
     ? {
         $or: [
           { name: { $regex: req.query.search, $options: "i" } },
-          // regex provides regular expresssion capabilities for pattern matching strings in queries
+          // regex provides regular expression capabilities for pattern matching strings in queries
           { email: { $regex: req.query.search, $options: "i" } },
         ],
       }

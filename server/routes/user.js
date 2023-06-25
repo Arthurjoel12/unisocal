@@ -9,8 +9,8 @@ router.post("/signup", registerUser);
 router.post("/login", authUser);
 
 // Routes that require authentication
-router.use("/users", protect);
-router.get("/users", allUsers);
-router.put("/users/update", update);
+router.use(protect);
+router.get("/", allUsers);
+router.put("/update", update);
 
 export default router;
