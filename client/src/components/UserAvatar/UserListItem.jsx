@@ -51,15 +51,17 @@ const UserListItem = ({
         <Box display="flex" flexDirection={"column"}>
           {chatAvail ? (
             <Button
-              mb={1}
-              _hover={{ color: "black" }}
-              size="xs"
-              colorScheme="whatsapp"
-              variant="solid"
-              onClick={() => handleChatFunction(user)} // Update this line
-            >
-              Chat
-            </Button>
+            mb={1}
+            _hover={{ color: "black" }}
+            size="xs"
+            colorScheme="whatsapp"
+            variant="solid"
+            onClick={() => handleChatFunction(user)} // Update this line
+          >
+            Chat
+          </Button>
+          
+          
           ) : (
             ""
           )}

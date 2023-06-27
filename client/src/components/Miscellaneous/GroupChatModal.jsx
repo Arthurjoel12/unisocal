@@ -127,7 +127,6 @@ const GroupChatModal = ({ children }) => {
   };
 
   const handleGroup = (userToAdd) => {
-    console.log("User Object:", userToAdd);
     if (selectedUsers.some((user) => user._id === userToAdd._id)) {
       toast({
         title: "User already added",
@@ -138,9 +137,15 @@ const GroupChatModal = ({ children }) => {
       });
       return;
     }
-
-    setSelectedUsers((prevSelectedUsers) => [...prevSelectedUsers, userToAdd]);
+  
+    setSelectedUsers((prevSelectedUsers) => {
+      const newSelectedUsers = [...prevSelectedUsers, userToAdd];
+      return newSelectedUsers;
+    });
   };
+  
+  
+  
 
   return (
     <>
@@ -159,50 +164,51 @@ const GroupChatModal = ({ children }) => {
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody display="flex" flexDir="column" alignItems="center">
-            <FormControl>
-              <FormLabel>Chat Name</FormLabel>
-              <Input
-                placeholder="Enter chat name"
-                value={groupChatName}
-                onChange={(e) => setGroupChatName(e.target.value)}
-              />
-            </FormControl>
-            <FormControl mt={4}>
-              <FormLabel>Add Users (e.g., Deno, Betty, Kamau)</FormLabel>
-              <Input
-                placeholder="Search for users"
-                onChange={(e) => handleSearch(e.target.value)}
-              />
-            </FormControl>
+  <FormControl>
+    <FormLabel>Chat Name</FormLabel>
+    <Input
+      placeholder="Enter chat name"
+      value={groupChatName}
+      onChange={(e) => setGroupChatName(e.target.value)}
+    />
+  </FormControl>
+  <FormControl mt={4}>
+    <FormLabel>Add Users (e.g., Deno, Betty, Kamau)</FormLabel>
+    <Input
+      placeholder="Search for users"
+      onChange={(e) => handleSearch(e.target.value)}
+    />
+  </FormControl>
 
-            <Box w="100%" display="flex" flexWrap="wrap" mt={4}>
-              {selectedUsers.map((user) => (
-                <UserBadgeItem
-                  key={user._id}
-                  user={user}
-                  handleFunction={() => handleDelete(user)}
-                />
-              ))}
-            </Box>
+  <Box w="100%" display="flex" flexWrap="wrap" mt={4}>
+    {selectedUsers.map((user) => (
+      <UserBadgeItem
+        key={user._id}
+        user={user}
+        handleFunction={() => handleDelete(user)}
+      />
+    ))}
+  </Box>
 
-            {loading ? (
-              <div>Loading...</div>
-            ) : (
-              searchResults?.slice(0, 4).map((user) => (
-                <React.Fragment key={user.user._id}>
-                  {user.isTrue ? (
-                    <UserListItem
-                      isTrue={false}
-                      user={user} // Update this line
-                      chatAvail={true}
-                      handleChatFunction={() => handleGroup(user)}
-                      handleConnectFunction={() => {}}
-                    />
-                  ) : null}
-                </React.Fragment>
-              ))
-            )}
-          </ModalBody>
+  {loading ? (
+    <div>Loading...</div>
+  ) : (
+    <div> {/* Updated here */}
+      {searchResults?.slice(0, 4).map((user) => (
+        <React.Fragment key={user.user._id}>
+          <UserListItem
+            isTrue={false}
+            user={user.user}
+            addAvail={true}
+            chatAvail={true}
+            handleChatFunction={() => handleGroup(user.user)}
+            handleConnectFunction={() => {}}
+          />
+        </React.Fragment>
+      ))}
+    </div>
+  )}
+</ModalBody>
 
           <ModalFooter>
             <Button onClick={handleSubmit} colorScheme="blue">
