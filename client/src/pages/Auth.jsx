@@ -26,7 +26,7 @@ const Auth = () => {
         borderWidth="1px"
       >
         <Text align={"center"} fontSize="4xl">
-          CollegeConnect
+          Unisocial 
         </Text>
       </Box>
       <Box
